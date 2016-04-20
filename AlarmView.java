@@ -1,5 +1,6 @@
 package com.jzlclock.jzl.jzlclock;
 
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
@@ -8,7 +9,9 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -50,6 +53,22 @@ public class AlarmView extends LinearLayout{
 
     private void addAlarm(){
         //TODO
+        Calendar c = Calendar.getInstance();
+        new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener(){
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                calendar.set(Calendar.MINUTE, minute);
+
+                Calendar currentTime = Calendar.getInstance();
+                if (calendar.getTimeInMillis() <= currentTime.getTimeInMillis()) {
+                    calendar.setTimeInMillis(calendar.getTimeInMillis()+24*60*60*1000);
+                }
+
+                adapter.add(new AlarmData(calendar.getTimeInMillis()));
+            }
+        }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show();
     }
 
     private Button btnAddAlarm;
@@ -60,8 +79,13 @@ public class AlarmView extends LinearLayout{
         public AlarmData(long time){
             this.time = time;
 
-            date = new Date(time);
-            timeLabel = date.getHours() + ":" + date.getMinutes();
+            date = Calendar.getInstance();
+            date.setTimeInMillis(time);
+            timeLabel = String.format("%d月%d日 %d:%d",
+                    date.get(Calendar.MONTH)+1,
+                    date.get(Calendar.DAY_OF_MONTH),
+                    date.get(Calendar.HOUR_OF_DAY),
+                    date.get(Calendar.MINUTE));
         }
 
         public long getTime() {
@@ -79,6 +103,6 @@ public class AlarmView extends LinearLayout{
 
         private String timeLabel = "";
         private long time = 0;
-        private Date date;
+        private Calendar date;
     }
 }
